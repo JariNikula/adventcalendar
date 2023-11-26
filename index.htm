@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<style>
+body {
+  display: flex;
+  justify-content: center;
+  padding; 0;
+  margin: 0;
+}
+
+#myCanvas {
+  margin: 0;
+  border: 1px solid;
+  position: absolute;
+  top: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+  cursor: none;
+}
+
+</style>
+</head>
+<body>
+
+<div class="testcanvas">
+<canvas id="myCanvas">
+Your browser does not support the HTML canvas tag.</canvas>
+</div>
+<canvas hidden id="dCanvas">
+Your browser does not support the HTML canvas tag.</canvas>
+</div>
+<canvas hidden id="gCanvas">
+Your browser does not support the HTML canvas tag.</canvas>
+</div>
+
+<script>
+let timer=0;
+let mouseX = 0;
+let mouseY = 0;
+let Size = 1.5;
+let date=new Date();
+let day=date.getDate();
+let month=date.getMonth()+1;
+let arcsize=15;
+
+let mousedown = false;
+let mouseinside = false;
+let savedimg = false;
+
+cardimg = new Image();
+cardimg.src = "card.png";
+
+scratchimg = new Image();
+scratchimg.src = "scratch.png";
+
+var audio = new Audio('scratch.mp3');
+
+sprites = [{date: 1, x: 7, y: 1097, sizex: 150, sizey: 80},
+	{date: 2, x: 736, y: 780, sizex: 58, sizey: 74},
+	{date: 3, x: 115, y: 913, sizex: 74, sizey: 75},
+	{date: 4, x: 135, y: 282, sizex: 152, sizey: 83},
+	{date: 5, x: 323, y: 351, sizex: 77, sizey: 95},
+	{date: 6, x: 300, y: 826, sizex: 133, sizey: 118},
+	{date: 7, x: 640, y: 950, sizex: 160, sizey: 203},
+	{date: 8, x: 118, y: 462, sizex: 97, sizey: 193},
+	{date: 9, x: 567, y: 562, sizex: 40, sizey: 80},
+	{date: 10, x: 690, y: 343, sizex: 110, sizey: 361},
+	{date: 11, x: 375, y: 62, sizex: 89, sizey: 116},
+	{date: 12, x: 357, y: 721, sizex: 92, sizey: 90},
+	{date: 13, x: 553, y: 402, sizex: 126, sizey: 96},
+	{date: 14, x: 340, y: 549, sizex: 77, sizey: 166},
+	{date: 15, x: 557, y: 948, sizex: 62, sizey: 54},
+	{date: 16, x: 0, y: 817, sizex: 114, sizey: 256},
+	{date: 17, x: 0, y: 84, sizex: 314, sizey: 153},
+	{date: 18, x: 457, y: 356, sizex: 71, sizey: 86},
+	{date: 19, x: 57, y: 410, sizex: 72, sizey: 69},
+	{date: 20, x: 672, y: 218, sizex: 88, sizey: 63},
+	{date: 21, x: 606, y: 589, sizex: 57, sizey: 54},
+	{date: 22, x: 262, y: 1001, sizex: 225, sizey: 199},
+	{date: 23, x: 438, y: 822, sizex: 125, sizey: 112},
+	{date: 24, x: 197, y: 695, sizex: 116, sizey: 99}]
+
+//Display canvas
+var canvas = document.getElementById("myCanvas");
+canvas.width = 800;
+canvas.height = 1200;
+
+canvas.style.width  = 800/Size+"px";
+canvas.style.height = 1200/Size+"px";
+
+var ctx = canvas.getContext("2d");
+
+//hidden Draw canvas
+var dcanvas = document.getElementById("dCanvas");
+dcanvas.width = 800;
+dcanvas.height = 1200;
+
+dcanvas.style.width  = 800/Size+"px";
+dcanvas.style.height = 1200/Size+"px";
+
+var dctx = dcanvas.getContext("2d");
+
+//hidden Draw canvas
+var gcanvas = document.getElementById("gCanvas");
+gcanvas.width = 800;
+gcanvas.height = 1200;
+
+gcanvas.style.width  = 800/Size+"px";
+gcanvas.style.height = 1200/Size+"px";
+
+var gctx = gcanvas.getContext("2d");
+
+function init(){
+	//get mouse things
+	let clientW=canvas.getBoundingClientRect();
+	canvas.onmousemove=e=>(mouseX=e.offsetX*Size,mouseY=e.offsetY*Size);
+
+	canvas.onmousedown=function(){
+		mousedown=true;
+		audio.loop = true;
+		audio.play();
+	}
+	canvas.onmouseup=function(){
+		mousedown=false;
+		audio.loop = false;
+	}
+	canvas.onmouseout=function(){
+		mouseinside=false;
+		audio.loop = false;
+		savedimg=true;
+	}
+	canvas.onmouseover=function(){
+		mouseinside=true;
+	}
+
+	if (day>24){
+		day=24;
+	}
+
+	if (month<12){
+		day=0;
+	}
+
+	//copy over stuff when picture loaded
+	scratchimg.onload = function() {
+		for(i=0;i<day;i++){
+		gctx.drawImage(scratchimg,sprites[i].x,sprites[i].y,sprites[i].sizex,sprites[i].sizey,sprites[i].x,sprites[i].y,sprites[i].sizex,sprites[i].sizey);
+		}
+	}
+
+}
+
+function animate() {	
+	ctx.drawImage(cardimg,0,0);
+	ctx.drawImage(dcanvas,0,0);
+
+	//gctx.clearRect(0,0,800,1200);
+
+
+	//paint to drawcanvas on mousedown
+	if(mousedown==true && mouseinside==true){
+		dctx.save();
+    		dctx.beginPath();
+    		dctx.arc(mouseX,mouseY,arcsize,0,7);
+		dctx.clip();
+		dctx.drawImage(gcanvas,mouseX-arcsize,mouseY-arcsize,arcsize*2,arcsize*2,mouseX-arcsize,mouseY-arcsize,arcsize*2,arcsize*2);
+		dctx.restore();
+
+	}
+
+	//display mouse object
+	if(mouseinside==true){
+		ctx.beginPath();
+		ctx.arc(mouseX,mouseY,arcsize,0,7);
+		ctx.fill();
+	}
+
+	timer++;
+	window.requestAnimationFrame(animate);
+}
+
+
+init();
+
+animate();
+
+
+</script>
+
+</body>
+</html>
